@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO \"user\" (\"name\", \"password_hash\") VALUES ($1, $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0c7ee105fc67816cec47de5c00d69023bbd0e00690cbc5d4532b3ba48505a7ea"
+}

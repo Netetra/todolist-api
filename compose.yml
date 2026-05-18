@@ -1,0 +1,25 @@
+name: todolist
+
+services:
+  db:
+    image: "postgres:18"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "todolist"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h db -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 1s
+  api:
+    build: .
+    ports:
+      - 3000:3000
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@db/todolist"
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  todolist-network:
+    driver: bridge
