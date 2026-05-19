@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM \"user\" WHERE \"name\" = $1",
+  "query": "SELECT * FROM users WHERE name = $1",
   "describe": {
     "columns": [
       {
@@ -30,5 +30,5 @@
       false
     ]
   },
-  "hash": "bf7561b17ed37e5f43f495c5a28098efbd0957cf67a12b6095abbbe768ce91f8"
+  "hash": "d08992cf2c132fedbed21b94d545e154fa2a7a2a2bf79fd033341d1bb5a6c0f2"
 }
