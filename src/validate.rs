@@ -1,4 +1,4 @@
-use crate::app::AppError;
+use crate::error::AppError;
 use axum::{Json, extract::FromRequest};
 use serde::de::DeserializeOwned;
 use validator::Validate;

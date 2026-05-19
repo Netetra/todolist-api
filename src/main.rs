@@ -1,6 +1,7 @@
 mod app;
 mod auth;
 mod entity;
+mod error;
 mod model;
 mod repository;
 mod router;

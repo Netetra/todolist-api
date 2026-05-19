@@ -2,8 +2,9 @@ use axum::{Json, extract::State};
 use chrono::Duration;
 
 use crate::{
-    app::{AppError, AppState},
+    app::AppState,
     auth::{generate_password_hash, generate_token, verify_password},
+    error::AppError,
     model::{JwtToken, UserCredentials},
     validate::ValidJson,
 };
