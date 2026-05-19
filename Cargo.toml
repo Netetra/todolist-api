@@ -6,10 +6,10 @@ edition = "2024"
 [dependencies]
 axum = { version = "0.8.9", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
-sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "migrate"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "migrate", "chrono"] }
 serde = { version = "1", features = ["derive"] }
 validator = { version = "0.20.0", features = ["derive"] }
 argon2 = "0.5.3"
 regex = "1"
 jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
-chrono = "0.4.44"
+chrono = { version = "0.4.44", features = ["serde"] }

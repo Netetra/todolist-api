@@ -1,6 +1,6 @@
 use sqlx::{Pool, Postgres, postgres::PgQueryResult};
 
-use crate::entity::UserEntity;
+use crate::entity::{TaskEntity, TaskStatus, UserEntity};
 
 pub type Executor = Pool<Postgres>;
 
@@ -29,5 +29,28 @@ impl UserRepository {
         )
         .execute(&self.executor)
         .await
+    }
+}
+
+pub struct TaskRepository {
+    executor: Executor,
+}
+
+impl TaskRepository {
+    pub fn new(executor: Executor) -> Self {
+        Self { executor }
+    }
+    pub async fn fetch_all(&self) -> Result<Vec<TaskEntity>, sqlx::Error> {
+        sqlx::query_as!(
+            TaskEntity,
+            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks"
+        ).fetch_all(&self.executor).await
+    }
+    pub async fn fetch_one(&self, id: i32) -> Result<Option<TaskEntity>, sqlx::Error> {
+        sqlx::query_as!(
+            TaskEntity,
+            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE id = $1",
+            id
+        ).fetch_optional(&self.executor).await
     }
 }

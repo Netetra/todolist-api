@@ -1,11 +1,14 @@
-use axum::{Json, extract::State};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use chrono::Duration;
 
 use crate::{
     app::AppState,
     auth::{generate_password_hash, generate_token, verify_password},
     error::AppError,
-    model::{JwtToken, UserCredentials},
+    model::{JwtToken, TaskModel, UserCredentials},
     validate::ValidJson,
 };
 
@@ -43,4 +46,25 @@ pub async fn login(
         &state.config.jwt_secret,
     )?;
     Ok(Json(JwtToken { token }))
+}
+
+pub async fn get_all_task(State(state): State<AppState>) -> Result<Json<Vec<TaskModel>>, AppError> {
+    let tasks: Vec<TaskModel> = state
+        .task_repo
+        .fetch_all()
+        .await?
+        .into_iter()
+        .map(|t| t.into())
+        .collect();
+    Ok(Json(tasks))
+}
+
+pub async fn get_task(
+    State(state): State<AppState>,
+    Path(id): Path<i32>,
+) -> Result<Json<TaskModel>, AppError> {
+    match state.task_repo.fetch_one(id).await? {
+        Some(task) => Ok(Json(task.into())),
+        None => Err(AppError::TaskNotFound),
+    }
 }

@@ -1,10 +1,13 @@
 use std::sync::Arc;
 
-use axum::{Router, routing::post};
+use axum::{
+    Router,
+    routing::{get, post},
+};
 
 use crate::{
-    repository::{Executor, UserRepository},
-    router::{login, user_register},
+    repository::{Executor, TaskRepository, UserRepository},
+    router::{get_all_task, get_task, login, user_register},
 };
 
 pub struct Config {
@@ -27,6 +30,7 @@ impl Config {
 
 pub struct AppStateInner {
     pub user_repo: UserRepository,
+    pub task_repo: TaskRepository,
     pub config: Config,
 }
 pub type AppState = Arc<AppStateInner>;
@@ -34,10 +38,13 @@ pub type AppState = Arc<AppStateInner>;
 pub fn build_app(executor: Executor, config: Config) -> Router {
     let state = Arc::new(AppStateInner {
         user_repo: UserRepository::new(executor.clone()),
+        task_repo: TaskRepository::new(executor.clone()),
         config,
     });
     Router::new()
         .route("/auth/register", post(user_register))
         .route("/auth/login", post(login))
+        .route("/todo/task/{id}", get(get_task))
+        .route("/todo/tasks", get(get_all_task))
         .with_state(state)
 }

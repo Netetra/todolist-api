@@ -9,6 +9,7 @@ use crate::model::ErrorResponse;
 pub enum AppError {
     UserAlreadyExists,
     UserNotFound,
+    TaskNotFound,
     SqlxError(sqlx::Error),
     PasswordHashError(argon2::password_hash::Error),
     PasswordVerifyFail(argon2::password_hash::Error),
@@ -31,6 +32,12 @@ impl IntoResponse for AppError {
                     message: "user not found.".to_owned(),
                 });
                 (StatusCode::BAD_REQUEST, body).into_response()
+            }
+            Self::TaskNotFound => {
+                let body = Json(ErrorResponse {
+                    message: "task not found.".to_owned(),
+                });
+                (StatusCode::NOT_FOUND, body).into_response()
             }
             Self::SqlxError(_) | Self::PasswordHashError(_) | Self::TokenEncodeError(_) => {
                 let body = Json(ErrorResponse {
