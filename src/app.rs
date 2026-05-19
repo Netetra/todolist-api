@@ -9,29 +9,53 @@ use validator::ValidationErrors;
 use crate::{
     model::ErrorResponse,
     repository::{Executor, UserRepository},
-    router::user_register,
+    router::{login, user_register},
 };
+
+pub struct Config {
+    pub addr: String,
+    pub db_url: String,
+    pub jwt_secret: String,
+    pub jwt_iss: String,
+}
+
+impl Config {
+    pub fn from_env() -> Self {
+        Self {
+            addr: std::env::var("ADDR").unwrap(),
+            db_url: std::env::var("DATABASE_URL").unwrap(),
+            jwt_secret: std::env::var("JWT_SECRET").unwrap(),
+            jwt_iss: std::env::var("JWT_ISS").unwrap(),
+        }
+    }
+}
 
 pub struct AppStateInner {
     pub user_repo: UserRepository,
+    pub config: Config,
 }
 pub type AppState = Arc<AppStateInner>;
 
 #[allow(dead_code)]
 pub enum AppError {
     UserAlreadyExists,
+    UserNotFound,
     SqlxError(sqlx::Error),
     PasswordHashError(argon2::password_hash::Error),
+    PasswordVerifyFail(argon2::password_hash::Error),
     JsonParseError(JsonRejection),
     ValidateError(ValidationErrors),
+    TokenEncodeError(jsonwebtoken::errors::Error),
 }
 
-pub fn build_app(executor: Executor) -> Router {
+pub fn build_app(executor: Executor, config: Config) -> Router {
     let state = Arc::new(AppStateInner {
         user_repo: UserRepository::new(executor.clone()),
+        config,
     });
     Router::new()
         .route("/auth/register", post(user_register))
+        .route("/auth/login", post(login))
         .with_state(state)
 }
 
@@ -44,11 +68,23 @@ impl IntoResponse for AppError {
                 });
                 (StatusCode::CONFLICT, body).into_response()
             }
-            Self::SqlxError(_) | Self::PasswordHashError(_) => {
+            Self::UserNotFound => {
+                let body = Json(ErrorResponse {
+                    message: "user not found.".to_owned(),
+                });
+                (StatusCode::BAD_REQUEST, body).into_response()
+            }
+            Self::SqlxError(_) | Self::PasswordHashError(_) | Self::TokenEncodeError(_) => {
                 let body = Json(ErrorResponse {
                     message: "something went wrong.".to_owned(),
                 });
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            Self::PasswordVerifyFail(_) => {
+                let body = Json(ErrorResponse {
+                    message: "password is wrong.".to_owned(),
+                });
+                (StatusCode::UNAUTHORIZED, body).into_response()
             }
             Self::JsonParseError(_) => {
                 let body = Json(ErrorResponse {
@@ -81,5 +117,11 @@ impl From<sqlx::Error> for AppError {
 impl From<argon2::password_hash::Error> for AppError {
     fn from(value: argon2::password_hash::Error) -> Self {
         AppError::PasswordHashError(value)
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for AppError {
+    fn from(value: jsonwebtoken::errors::Error) -> Self {
+        AppError::TokenEncodeError(value)
     }
 }

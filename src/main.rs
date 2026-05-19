@@ -1,4 +1,5 @@
 mod app;
+mod auth;
 mod entity;
 mod model;
 mod repository;
@@ -8,22 +9,21 @@ mod validate;
 use sqlx::{migrate, postgres::PgPoolOptions};
 use tokio::{net::TcpListener, signal};
 
-use crate::app::build_app;
+use crate::app::{Config, build_app};
 
 #[tokio::main]
 async fn main() {
-    let db_url = std::env::var("DATABASE_URL").unwrap();
-    let pool = PgPoolOptions::new().connect(&db_url).await.unwrap();
+    let config = Config::from_env();
+    let pool = PgPoolOptions::new().connect(&config.db_url).await.unwrap();
     println!("database connected.");
 
     migrate!().run(&pool).await.unwrap();
     println!("migration complated.");
 
-    let addr = "0.0.0.0:3000";
-    let listener = TcpListener::bind(addr).await.unwrap();
-    let app = build_app(pool);
+    let listener = TcpListener::bind(&config.addr).await.unwrap();
+    println!("listenning on {}.", &config.addr);
 
-    println!("listenning on {}.", addr);
+    let app = build_app(pool, config);
     let _ = axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await;

@@ -15,7 +15,10 @@ services:
     ports:
       - 3000:3000
     environment:
+      ADDR: "0.0.0.0:3000"
       DATABASE_URL: "postgres://postgres:postgres@db/todolist"
+      JWT_SECRET: "3w5ezQ6GE/CsDE4a5q7MS3WTF0eXOmuEXsC+dXTqOqZ6aKkmlGFZOCe9hmULrrPM3EL60qufpdPdJILzMlrSYDtTvzgl0OnYByEQztLmCiWbUv8hf8Q4PqQt5hzxCk39jbrjzhtQFis0tE9RwwP/tqN+Ko8JaPDKujJTlWcu49E0Z2wBDN5FhlWUEUyM1qfGNsdNS1x6yNwaDoRP0xXDk+3Jov1fFhTQuLXCa41byPp5D+kzVE2IHsbR7AFcpl2GhBAj1MIPkptNOwNyhikrVrChO4LM0iUFTY0r+e53TUggrOjQh3W4dXCW2CD2NOL1OJeAOcw0bZefSS5UJgHdGw=="
+      JWT_ISS: "todolist-api"
     depends_on:
       db:
         condition: service_healthy

@@ -1,24 +1,12 @@
-use argon2::{
-    Argon2, PasswordHasher,
-    password_hash::{SaltString, rand_core::OsRng},
-};
-use axum::extract::State;
+use axum::{Json, extract::State};
+use chrono::Duration;
 
 use crate::{
     app::{AppError, AppState},
-    model::UserCredentials,
+    auth::{generate_password_hash, generate_token, verify_password},
+    model::{JwtToken, UserCredentials},
     validate::ValidJson,
 };
-
-fn generate_password_hash(password: &str) -> Result<String, argon2::password_hash::Error> {
-    let salt = SaltString::generate(OsRng);
-    let argon2 = Argon2::default();
-
-    let password_hash = argon2
-        .hash_password(password.as_bytes(), &salt)?
-        .to_string();
-    Ok(password_hash)
-}
 
 pub async fn user_register(
     State(state): State<AppState>,
@@ -31,4 +19,27 @@ pub async fn user_register(
     let password_hash = generate_password_hash(&body.password)?;
     let _ = state.user_repo.insert(&body.name, &password_hash).await?;
     Ok(())
+}
+
+pub async fn login(
+    State(state): State<AppState>,
+    ValidJson(body): ValidJson<UserCredentials>,
+) -> Result<Json<JwtToken>, AppError> {
+    let result = state.user_repo.find(&body.name).await?;
+    let user = match result {
+        Some(user) => user,
+        None => {
+            return Err(AppError::UserNotFound);
+        }
+    };
+    verify_password(&body.password, &user.password_hash)?;
+
+    let sub = user.id.to_string();
+    let token = generate_token(
+        &state.config.jwt_iss,
+        &sub,
+        Duration::days(1),
+        &state.config.jwt_secret,
+    )?;
+    Ok(Json(JwtToken { token }))
 }

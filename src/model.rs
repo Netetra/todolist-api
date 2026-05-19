@@ -21,3 +21,8 @@ pub struct UserCredentials {
 pub struct ErrorResponse {
     pub message: String,
 }
+
+#[derive(Serialize)]
+pub struct JwtToken {
+    pub token: String,
+}
