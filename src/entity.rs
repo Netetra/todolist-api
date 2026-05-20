@@ -1,11 +1,26 @@
+use axum::{extract::FromRequestParts, http::request::Parts};
 use chrono::NaiveDateTime;
 
-#[derive(sqlx::FromRow)]
-#[allow(dead_code)]
+use crate::error::AppError;
+
+#[derive(sqlx::FromRow, Clone)]
 pub struct UserEntity {
     pub id: i32,
+    #[allow(dead_code)]
     pub name: String,
     pub password_hash: String,
+}
+
+impl<S: Send + Sync> FromRequestParts<S> for UserEntity {
+    type Rejection = AppError;
+
+    async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, Self::Rejection> {
+        let user = parts
+            .extensions
+            .get::<Self>()
+            .ok_or(AppError::UserNotFound)?;
+        Ok(user.clone())
+    }
 }
 
 #[derive(sqlx::Type)]
@@ -21,7 +36,7 @@ impl From<TaskStatus> for String {
         match value {
             TaskStatus::Todo => "todo".to_owned(),
             TaskStatus::Doing => "doing".to_owned(),
-            TaskStatus::Done => "done".to_owned()
+            TaskStatus::Done => "done".to_owned(),
         }
     }
 }
@@ -34,5 +49,6 @@ pub struct TaskEntity {
     pub status: TaskStatus,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
+    #[allow(dead_code)]
     pub user_id: i32,
 }

@@ -16,6 +16,8 @@ pub enum AppError {
     JsonParseError(JsonRejection),
     ValidateError(ValidationErrors),
     TokenEncodeError(jsonwebtoken::errors::Error),
+    TokenVerifyError,
+    TokenNotSet,
 }
 
 impl IntoResponse for AppError {
@@ -68,6 +70,18 @@ impl IntoResponse for AppError {
                     .to_string();
                 let body = Json(ErrorResponse { message });
                 (StatusCode::BAD_REQUEST, body).into_response()
+            }
+            Self::TokenVerifyError => {
+                let body = Json(ErrorResponse {
+                    message: "token is wrong.".to_owned(),
+                });
+                (StatusCode::UNAUTHORIZED, body).into_response()
+            }
+            Self::TokenNotSet => {
+                let body = Json(ErrorResponse {
+                    message: "token is not set.".to_owned(),
+                });
+                (StatusCode::UNAUTHORIZED, body).into_response()
             }
         }
     }

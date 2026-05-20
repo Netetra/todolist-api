@@ -38,7 +38,6 @@ pub struct TaskModel {
     pub status: String,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
-    pub user_id: i32,
 }
 
 impl From<TaskEntity> for TaskModel {
@@ -50,7 +49,6 @@ impl From<TaskEntity> for TaskModel {
             status: value.status.into(),
             created_at: value.created_at,
             updated_at: value.updated_at,
-            user_id: value.user_id,
         }
     }
 }

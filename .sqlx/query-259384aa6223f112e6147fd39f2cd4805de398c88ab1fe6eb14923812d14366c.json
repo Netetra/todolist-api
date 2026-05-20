@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks",
+  "query": "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE user_id = $1",
   "describe": {
     "columns": [
       {
@@ -51,7 +51,9 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Int4"
+      ]
     },
     "nullable": [
       false,
@@ -63,5 +65,5 @@
       false
     ]
   },
-  "hash": "62369c7d4b6671d1851de96efab368522f829c7c809c047fee21b70f8979471d"
+  "hash": "259384aa6223f112e6147fd39f2cd4805de398c88ab1fe6eb14923812d14366c"
 }

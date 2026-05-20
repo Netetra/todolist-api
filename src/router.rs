@@ -7,16 +7,17 @@ use chrono::Duration;
 use crate::{
     app::AppState,
     auth::{generate_password_hash, generate_token, verify_password},
+    entity::UserEntity,
     error::AppError,
     model::{JwtToken, TaskModel, UserCredentials},
     validate::ValidJson,
 };
 
-pub async fn user_register(
+pub async fn register_user(
     State(state): State<AppState>,
     ValidJson(body): ValidJson<UserCredentials>,
 ) -> Result<(), AppError> {
-    let result = state.user_repo.find(&body.name).await?;
+    let result = state.user_repo.find_by_name(&body.name).await?;
     if result.is_some() {
         return Err(AppError::UserAlreadyExists);
     }
@@ -25,11 +26,11 @@ pub async fn user_register(
     Ok(())
 }
 
-pub async fn login(
+pub async fn login_user(
     State(state): State<AppState>,
     ValidJson(body): ValidJson<UserCredentials>,
 ) -> Result<Json<JwtToken>, AppError> {
-    let result = state.user_repo.find(&body.name).await?;
+    let result = state.user_repo.find_by_name(&body.name).await?;
     let user = match result {
         Some(user) => user,
         None => {
@@ -48,10 +49,13 @@ pub async fn login(
     Ok(Json(JwtToken { token }))
 }
 
-pub async fn get_all_task(State(state): State<AppState>) -> Result<Json<Vec<TaskModel>>, AppError> {
+pub async fn get_all_task(
+    State(state): State<AppState>,
+    user: UserEntity,
+) -> Result<Json<Vec<TaskModel>>, AppError> {
     let tasks: Vec<TaskModel> = state
         .task_repo
-        .fetch_all()
+        .fetch_all(user.id)
         .await?
         .into_iter()
         .map(|t| t.into())
@@ -62,8 +66,9 @@ pub async fn get_all_task(State(state): State<AppState>) -> Result<Json<Vec<Task
 pub async fn get_task(
     State(state): State<AppState>,
     Path(id): Path<i32>,
+    user: UserEntity,
 ) -> Result<Json<TaskModel>, AppError> {
-    match state.task_repo.fetch_one(id).await? {
+    match state.task_repo.fetch_one(user.id, id).await? {
         Some(task) => Ok(Json(task.into())),
         None => Err(AppError::TaskNotFound),
     }

@@ -12,8 +12,13 @@ impl UserRepository {
     pub fn new(executor: Executor) -> Self {
         Self { executor }
     }
-    pub async fn find(&self, name: &str) -> Result<Option<UserEntity>, sqlx::Error> {
+    pub async fn find_by_name(&self, name: &str) -> Result<Option<UserEntity>, sqlx::Error> {
         sqlx::query_as!(UserEntity, r#"SELECT * FROM users WHERE name = $1"#, name)
+            .fetch_optional(&self.executor)
+            .await
+    }
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<UserEntity>, sqlx::Error> {
+        sqlx::query_as!(UserEntity, r#"SELECT * FROM users WHERE id = $1"#, id)
             .fetch_optional(&self.executor)
             .await
     }
@@ -40,17 +45,22 @@ impl TaskRepository {
     pub fn new(executor: Executor) -> Self {
         Self { executor }
     }
-    pub async fn fetch_all(&self) -> Result<Vec<TaskEntity>, sqlx::Error> {
+    pub async fn fetch_all(&self, user_id: i32) -> Result<Vec<TaskEntity>, sqlx::Error> {
         sqlx::query_as!(
             TaskEntity,
-            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks"
+            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE user_id = $1", user_id
         ).fetch_all(&self.executor).await
     }
-    pub async fn fetch_one(&self, id: i32) -> Result<Option<TaskEntity>, sqlx::Error> {
+    pub async fn fetch_one(
+        &self,
+        user_id: i32,
+        task_id: i32,
+    ) -> Result<Option<TaskEntity>, sqlx::Error> {
         sqlx::query_as!(
             TaskEntity,
-            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE id = $1",
-            id
+            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE id = $1 AND user_id = $2",
+            task_id,
+            user_id
         ).fetch_optional(&self.executor).await
     }
 }

@@ -1,13 +1,14 @@
 use std::sync::Arc;
 
 use axum::{
-    Router,
+    Router, middleware,
     routing::{get, post},
 };
 
 use crate::{
+    auth::auth_middleware,
     repository::{Executor, TaskRepository, UserRepository},
-    router::{get_all_task, get_task, login, user_register},
+    router::{get_all_task, get_task, login_user, register_user},
 };
 
 pub struct Config {
@@ -42,9 +43,13 @@ pub fn build_app(executor: Executor, config: Config) -> Router {
         config,
     });
     Router::new()
-        .route("/auth/register", post(user_register))
-        .route("/auth/login", post(login))
         .route("/todo/task/{id}", get(get_task))
         .route("/todo/tasks", get(get_all_task))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            auth_middleware,
+        ))
+        .route("/auth/register", post(register_user))
+        .route("/auth/login", post(login_user))
         .with_state(state)
 }
