@@ -1,6 +1,5 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
 use chrono::NaiveDateTime;
-use serde::Deserialize;
 
 use crate::{error::AppError, model::TaskStatusModel};
 

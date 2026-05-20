@@ -46,22 +46,22 @@ impl TaskRepository {
     pub fn new(executor: Executor) -> Self {
         Self { executor }
     }
-    pub async fn fetch_all(&self, user_id: i32) -> Result<Vec<TaskEntity>, sqlx::Error> {
+    pub async fn fetch_all(&self, user: &UserEntity) -> Result<Vec<TaskEntity>, sqlx::Error> {
         sqlx::query_as!(
             TaskEntity,
-            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE user_id = $1", user_id
+            "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE user_id = $1", user.id
         ).fetch_all(&self.executor).await
     }
     pub async fn fetch_one(
         &self,
-        user_id: i32,
+        user: &UserEntity,
         task_id: i32,
     ) -> Result<Option<TaskEntity>, sqlx::Error> {
         sqlx::query_as!(
             TaskEntity,
             "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE id = $1 AND user_id = $2",
             task_id,
-            user_id
+            user.id
         ).fetch_optional(&self.executor).await
     }
     pub async fn insert(
@@ -70,7 +70,7 @@ impl TaskRepository {
         description: &str,
         status: TaskStatus,
         created_at: NaiveDateTime,
-        user_id: i32,
+        user: &UserEntity,
     ) -> Result<PgQueryResult, sqlx::Error> {
         sqlx::query!(
             "INSERT INTO tasks (title, description, status, created_at, user_id) VALUES ($1, $2, $3, $4, $5)",
@@ -78,9 +78,23 @@ impl TaskRepository {
             description,
             status as TaskStatus,
             created_at,
-            user_id
+            user.id
         )
         .execute(&self.executor)
         .await
+    }
+    pub async fn delete(
+        &self,
+        task_id: i32,
+        user: &UserEntity,
+    ) -> Result<PgQueryResult, sqlx::Error> {
+        let result = sqlx::query!(
+            "DELETE FROM tasks WHERE id = $1 AND user_id = $2",
+            task_id,
+            user.id
+        )
+        .execute(&self.executor)
+        .await;
+        result
     }
 }

@@ -55,7 +55,7 @@ pub async fn get_all_task(
 ) -> Result<Json<Vec<TaskResponseModel>>, AppError> {
     let tasks: Vec<TaskResponseModel> = state
         .task_repo
-        .fetch_all(user.id)
+        .fetch_all(&user)
         .await?
         .into_iter()
         .map(|t| t.into())
@@ -68,7 +68,7 @@ pub async fn get_task(
     Path(id): Path<i32>,
     user: UserEntity,
 ) -> Result<Json<TaskResponseModel>, AppError> {
-    match state.task_repo.fetch_one(user.id, id).await? {
+    match state.task_repo.fetch_one(&user, id).await? {
         Some(task) => Ok(Json(task.into())),
         None => Err(AppError::TaskNotFound),
     }
@@ -87,8 +87,20 @@ pub async fn register_task(
             &body.description,
             body.status.into(),
             created_at,
-            user.id,
+            &user,
         )
         .await?;
+    Ok(())
+}
+
+pub async fn delete_task(
+    State(state): State<AppState>,
+    user: UserEntity,
+    Path(task_id): Path<i32>,
+) -> Result<(), AppError> {
+    let result = state.task_repo.delete(task_id, &user).await?;
+    if result.rows_affected() == 0 {
+        return Err(AppError::TaskNotFound);
+    }
     Ok(())
 }
