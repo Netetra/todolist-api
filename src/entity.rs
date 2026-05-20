@@ -1,7 +1,8 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
 use chrono::NaiveDateTime;
+use serde::Deserialize;
 
-use crate::error::AppError;
+use crate::{error::AppError, model::TaskStatusModel};
 
 #[derive(sqlx::FromRow, Clone)]
 pub struct UserEntity {
@@ -29,6 +30,16 @@ pub enum TaskStatus {
     Todo,
     Doing,
     Done,
+}
+
+impl From<TaskStatusModel> for TaskStatus {
+    fn from(value: TaskStatusModel) -> Self {
+        match value {
+            TaskStatusModel::Todo => TaskStatus::Todo,
+            TaskStatusModel::Doing => TaskStatus::Doing,
+            TaskStatusModel::Done => TaskStatus::Done,
+        }
+    }
 }
 
 impl From<TaskStatus> for String {

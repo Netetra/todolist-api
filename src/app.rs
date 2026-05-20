@@ -8,7 +8,7 @@ use axum::{
 use crate::{
     auth::auth_middleware,
     repository::{Executor, TaskRepository, UserRepository},
-    router::{get_all_task, get_task, login_user, register_user},
+    router::{get_all_task, get_task, login_user, register_task, register_user},
 };
 
 pub struct Config {
@@ -43,6 +43,7 @@ pub fn build_app(executor: Executor, config: Config) -> Router {
         config,
     });
     Router::new()
+        .route("/todo/task", post(register_task))
         .route("/todo/task/{id}", get(get_task))
         .route("/todo/tasks", get(get_all_task))
         .layer(middleware::from_fn_with_state(

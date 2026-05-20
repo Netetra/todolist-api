@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use sqlx::{Pool, Postgres, postgres::PgQueryResult};
 
 use crate::entity::{TaskEntity, TaskStatus, UserEntity};
@@ -62,5 +63,24 @@ impl TaskRepository {
             task_id,
             user_id
         ).fetch_optional(&self.executor).await
+    }
+    pub async fn insert(
+        &self,
+        title: &str,
+        description: &str,
+        status: TaskStatus,
+        created_at: NaiveDateTime,
+        user_id: i32,
+    ) -> Result<PgQueryResult, sqlx::Error> {
+        sqlx::query!(
+            "INSERT INTO tasks (title, description, status, created_at, user_id) VALUES ($1, $2, $3, $4, $5)",
+            title,
+            description,
+            status as TaskStatus,
+            created_at,
+            user_id
+        )
+        .execute(&self.executor)
+        .await
     }
 }

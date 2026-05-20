@@ -12,11 +12,11 @@ static USER_NAME_REGEX: LazyLock<Regex> =
 static USER_PASSWORD_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9!@#$%_]{8,20}$").unwrap());
 
-#[derive(Deserialize, Validate, Debug)]
+#[derive(Deserialize, Validate)]
 pub struct UserCredentials {
-    #[validate(regex(path=*USER_NAME_REGEX, message="ユーザー名は前後空白禁止で英数字と_と-のみ2文字以上20文字以下です。"))]
+    #[validate(regex(path=*USER_NAME_REGEX, message="nameは前後空白禁止で英数字と_と-のみ2文字以上20文字以下です。"))]
     pub name: String,
-    #[validate(regex(path=*USER_PASSWORD_REGEX, message="パスワードは英数字と記号(!@#$%)のみ8文字以上20文字以下です。"))]
+    #[validate(regex(path=*USER_PASSWORD_REGEX, message="passwordは英数字と記号(!@#$%)のみ8文字以上20文字以下です。"))]
     pub password: String,
 }
 
@@ -31,7 +31,7 @@ pub struct JwtToken {
 }
 
 #[derive(Serialize)]
-pub struct TaskModel {
+pub struct TaskResponseModel {
     pub id: i32,
     pub title: String,
     pub description: String,
@@ -40,7 +40,7 @@ pub struct TaskModel {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-impl From<TaskEntity> for TaskModel {
+impl From<TaskEntity> for TaskResponseModel {
     fn from(value: TaskEntity) -> Self {
         Self {
             id: value.id,
@@ -51,4 +51,27 @@ impl From<TaskEntity> for TaskModel {
             updated_at: value.updated_at,
         }
     }
+}
+
+#[derive(Deserialize)]
+pub enum TaskStatusModel {
+    #[serde(alias = "todo")]
+    Todo,
+    #[serde(alias = "doing")]
+    Doing,
+    #[serde(alias = "done")]
+    Done,
+}
+
+#[derive(Validate, Deserialize)]
+pub struct TaskRequestModel {
+    #[validate(length(min = 1, max = 100, message = "titleは1文字以上100文字以下です。"))]
+    pub title: String,
+    #[validate(length(
+        min = 1,
+        max = 1000,
+        message = "descriptionは1文字以上1000文字以下です。"
+    ))]
+    pub description: String,
+    pub status: TaskStatusModel,
 }

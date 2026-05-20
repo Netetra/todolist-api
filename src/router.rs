@@ -2,14 +2,14 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use chrono::Duration;
+use chrono::{Duration, Utc};
 
 use crate::{
     app::AppState,
     auth::{generate_password_hash, generate_token, verify_password},
     entity::UserEntity,
     error::AppError,
-    model::{JwtToken, TaskModel, UserCredentials},
+    model::{JwtToken, TaskRequestModel, TaskResponseModel, UserCredentials},
     validate::ValidJson,
 };
 
@@ -52,8 +52,8 @@ pub async fn login_user(
 pub async fn get_all_task(
     State(state): State<AppState>,
     user: UserEntity,
-) -> Result<Json<Vec<TaskModel>>, AppError> {
-    let tasks: Vec<TaskModel> = state
+) -> Result<Json<Vec<TaskResponseModel>>, AppError> {
+    let tasks: Vec<TaskResponseModel> = state
         .task_repo
         .fetch_all(user.id)
         .await?
@@ -67,9 +67,28 @@ pub async fn get_task(
     State(state): State<AppState>,
     Path(id): Path<i32>,
     user: UserEntity,
-) -> Result<Json<TaskModel>, AppError> {
+) -> Result<Json<TaskResponseModel>, AppError> {
     match state.task_repo.fetch_one(user.id, id).await? {
         Some(task) => Ok(Json(task.into())),
         None => Err(AppError::TaskNotFound),
     }
+}
+
+pub async fn register_task(
+    State(state): State<AppState>,
+    user: UserEntity,
+    ValidJson(body): ValidJson<TaskRequestModel>,
+) -> Result<(), AppError> {
+    let created_at = Utc::now().naive_utc();
+    state
+        .task_repo
+        .insert(
+            &body.title,
+            &body.description,
+            body.status.into(),
+            created_at,
+            user.id,
+        )
+        .await?;
+    Ok(())
 }
