@@ -104,3 +104,24 @@ pub async fn delete_task(
     }
     Ok(())
 }
+
+pub async fn update_task(
+    State(state): State<AppState>,
+    user: UserEntity,
+    Path(task_id): Path<i32>,
+    Json(body): Json<TaskRequestModel>,
+) -> Result<(), AppError> {
+    let updated_at = Utc::now().naive_utc();
+    state
+        .task_repo
+        .update(
+            task_id,
+            &body.title,
+            &body.description,
+            body.status.into(),
+            updated_at,
+            &user,
+        )
+        .await?;
+    Ok(())
+}

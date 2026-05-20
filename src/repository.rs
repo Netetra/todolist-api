@@ -88,13 +88,31 @@ impl TaskRepository {
         task_id: i32,
         user: &UserEntity,
     ) -> Result<PgQueryResult, sqlx::Error> {
-        let result = sqlx::query!(
+        sqlx::query!(
             "DELETE FROM tasks WHERE id = $1 AND user_id = $2",
             task_id,
             user.id
         )
         .execute(&self.executor)
-        .await;
-        result
+        .await
+    }
+    pub async fn update(
+        &self,
+        task_id: i32,
+        title: &str,
+        description: &str,
+        status: TaskStatus,
+        updated_at: NaiveDateTime,
+        user: &UserEntity,
+    ) -> Result<PgQueryResult, sqlx::Error> {
+        sqlx::query!(
+            "UPDATE tasks SET title = $1, description = $2, status = $3, updated_at = $4 WHERE id = $5 AND user_id = $6",
+            title,
+            description,
+            status as TaskStatus,
+            updated_at,
+            task_id,
+            user.id
+        ).execute(&self.executor).await
     }
 }
