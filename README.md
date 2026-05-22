@@ -58,6 +58,7 @@ type Request = {
   title: string; // 1文字以上100文字以下
   description: string; // 1文字以上1000文字以下
   status: "todo" | "doing" | "done";
+  deadline: string | null; // ISO8601(UTC)
 };
 ```
 
@@ -74,11 +75,12 @@ curl -i http://localhost:3000/todo/task -X POST -H "Content-Type: application/js
 ```ts
 type Response = {
   id: number;
-  title: string;
-  description: string;
+  title: string; // 1文字以上100文字以下
+  description: string; // 1文字以上1000文字以下
   status: "todo" | "doing" | "done";
-  created_at: string; // timestamp(UTC)
-  updated_at: string | null; // timestamp(UTC)
+  created_at: string; // ISO8601(UTC)
+  updated_at: string | null; // ISO8601(UTC)
+  deadline: string | null; // ISO8601(UTC)
 };
 ```
 
@@ -96,6 +98,7 @@ type Request = {
   title: string; // 1文字以上100文字以下
   description: string; // 1文字以上1000文字以下
   status: "todo" | "doing" | "done";
+  deadline: string | null; // ISO8601(UTC)
 };
 ```
 
@@ -113,6 +116,7 @@ curl -i http://localhost:3000/todo/task/1 -X DELETE -H "Content-Type: applicatio
 ```
 
 ### `/todo/tasks`
+#### GET
 タスク一覧を取得します。
 
 ##### レスポンスの形式
@@ -122,8 +126,9 @@ type Task = {
   title: string; // 1文字以上100文字以下
   description: string; // 1文字以上1000文字以下
   status: "todo" | "doing" | "done";
-  created_at: string; // timestamp(UTC)
-  updated_at: string | null; // timestamp(UTC)
+  created_at: string; // ISO8601(UTC)
+  updated_at: string | null; // ISO8601(UTC)
+  deadline: string | null; // ISO8601(UTC)
 };
 
 type Response = Task[];
@@ -132,4 +137,50 @@ type Response = Task[];
 ##### 実行例
 ```sh
 curl -i http://localhost:3000/todo/tasks -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN"
+```
+
+### `/todo/tasks/{status}`
+#### GET
+パスパラメータで指定した状態のタスクのみ取得します。
+
+```ts
+type Task = {
+  id: number;
+  title: string; // 1文字以上100文字以下
+  description: string; // 1文字以上1000文字以下
+  status: "todo" | "doing" | "done";
+  created_at: string; // ISO8601(UTC)
+  updated_at: string | null; // ISO8601(UTC)
+  deadline: string | null; // ISO8601(UTC)
+};
+
+type Response = Task[];
+```
+
+##### 実行例
+```sh
+curl -i http://localhost:3000/todo/tasks/todo -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN"
+```
+
+### `/todo/overdue`
+#### GET
+期限超過のタスクのみ取得します。
+
+```ts
+type Task = {
+  id: number;
+  title: string; // 1文字以上100文字以下
+  description: string; // 1文字以上1000文字以下
+  status: "todo" | "doing" | "done";
+  created_at: string; // ISO8601(UTC)
+  updated_at: string | null; // ISO8601(UTC)
+  deadline: string | null; // ISO8601(UTC)
+};
+
+type Response = Task[];
+```
+
+##### 実行例
+```sh
+curl -i http://localhost:3000/todo/overdue -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN"
 ```
