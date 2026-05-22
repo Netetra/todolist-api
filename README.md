@@ -6,6 +6,18 @@ docker compose up
 ```
 環境変数は`compose.yml`内に適当な値を入れてあるので設定する必要はありません
 
+## 追加機能や設計上工夫した点
+### 追加機能
+- `/todo/overdue` 期限超過したタスク一覧取得
+- `/todo/tasks/{status}` 状態別でタスク一覧取得
+
+### 設計上工夫した点
+- パスワードはargon2でハッシュ化して保存
+- コンテナはマルチステージビルドで軽量化
+- DB依存のところはrepositoryとして切り出し
+- 認証処理はミドルウェアに切り出し
+- エラーはすべて`AppError`にして集中管理
+
 ## Endpoints
 ### `/auth/register`
 #### POST
