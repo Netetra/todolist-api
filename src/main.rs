@@ -24,10 +24,11 @@ async fn main() {
     let listener = TcpListener::bind(&config.addr).await.unwrap();
     println!("listenning on {}.", &config.addr);
 
-    let app = build_app(pool, config);
+    let app = build_app(pool.clone(), config);
     let _ = axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await;
+    pool.close().await;
 }
 
 async fn shutdown_signal() {
