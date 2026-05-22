@@ -113,7 +113,7 @@ pub async fn update_task(
     Json(body): Json<TaskRequestModel>,
 ) -> Result<(), AppError> {
     let updated_at = Utc::now().naive_utc();
-    state
+    let result = state
         .task_repo
         .update(
             task_id,
@@ -125,6 +125,9 @@ pub async fn update_task(
             &user,
         )
         .await?;
+    if result.rows_affected() == 0 {
+        return Err(AppError::TaskNotFound);
+    }
     Ok(())
 }
 
