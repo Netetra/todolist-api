@@ -116,7 +116,7 @@ type Request = {
 
 ##### 実行例
 ```sh
-curl -i http://localhost:3000/todo/task/1 -X PATCH -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{ "title":"旅行", "description":"行けたらいく", "status":"doing" }'
+curl -i http://localhost:3000/todo/task/1 -X PATCH -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{ "title":"旅行", "description":"行けたらいく", "status":"doing", "deadline": "2027-01-01T00:00:00" }'
 ```
 
 #### DELETE
