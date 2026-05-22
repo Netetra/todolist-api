@@ -38,6 +38,7 @@ pub struct TaskResponseModel {
     pub status: String,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
+    pub deadline: Option<NaiveDateTime>,
 }
 
 impl From<TaskEntity> for TaskResponseModel {
@@ -49,6 +50,7 @@ impl From<TaskEntity> for TaskResponseModel {
             status: value.status.into(),
             created_at: value.created_at,
             updated_at: value.updated_at,
+            deadline: value.deadline,
         }
     }
 }
@@ -74,4 +76,5 @@ pub struct TaskRequestModel {
     ))]
     pub description: String,
     pub status: TaskStatusModel,
+    pub deadline: Option<NaiveDateTime>,
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO tasks (title, description, status, created_at, user_id) VALUES ($1, $2, $3, $4, $5)",
+  "query": "UPDATE tasks SET title = $1, description = $2, status = $3, updated_at = $4, deadline = $5 WHERE id = $6 AND user_id = $7",
   "describe": {
     "columns": [],
     "parameters": {
@@ -20,10 +20,12 @@
           }
         },
         "Timestamp",
+        "Timestamp",
+        "Int4",
         "Int4"
       ]
     },
     "nullable": []
   },
-  "hash": "72df2a4cc0b89b8c9622f68b5b20475db891e942928b006e4261de69bfaeaf68"
+  "hash": "dd858d645a39efbb817b3bb52ad1217599b927e6eee159bb99e2126750ec3d55"
 }

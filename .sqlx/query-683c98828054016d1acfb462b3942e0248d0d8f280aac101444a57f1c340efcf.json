@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, user_id FROM tasks WHERE id = $1 AND user_id = $2",
+  "query": "SELECT id, title, description, status as \"status: TaskStatus\", created_at, updated_at, deadline, user_id FROM tasks WHERE user_id = $1 AND deadline < $2",
   "describe": {
     "columns": [
       {
@@ -46,6 +46,11 @@
       },
       {
         "ordinal": 6,
+        "name": "deadline",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 7,
         "name": "user_id",
         "type_info": "Int4"
       }
@@ -53,7 +58,7 @@
     "parameters": {
       "Left": [
         "Int4",
-        "Int4"
+        "Timestamp"
       ]
     },
     "nullable": [
@@ -63,8 +68,9 @@
       false,
       false,
       true,
+      true,
       false
     ]
   },
-  "hash": "816a6ee1747630945564317b4559fa07d8348b507206f3083e83b4b45ce9376f"
+  "hash": "683c98828054016d1acfb462b3942e0248d0d8f280aac101444a57f1c340efcf"
 }

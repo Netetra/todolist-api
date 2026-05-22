@@ -9,7 +9,8 @@ use crate::{
     auth::auth_middleware,
     repository::{Executor, TaskRepository, UserRepository},
     router::{
-        delete_task, get_all_task, get_task, login_user, register_task, register_user, update_task,
+        delete_task, get_all_task, get_all_task_filter_by_status, get_overdue_task, get_task,
+        login_user, register_task, register_user, update_task,
     },
 };
 
@@ -51,6 +52,8 @@ pub fn build_app(executor: Executor, config: Config) -> Router {
             get(get_task).delete(delete_task).patch(update_task),
         )
         .route("/todo/tasks", get(get_all_task))
+        .route("/todo/tasks/{status}", get(get_all_task_filter_by_status))
+        .route("/todo/overdue", get(get_overdue_task))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth_middleware,

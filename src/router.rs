@@ -9,7 +9,7 @@ use crate::{
     auth::{generate_password_hash, generate_token, verify_password},
     entity::UserEntity,
     error::AppError,
-    model::{JwtToken, TaskRequestModel, TaskResponseModel, UserCredentials},
+    model::{JwtToken, TaskRequestModel, TaskResponseModel, TaskStatusModel, UserCredentials},
     validate::ValidJson,
 };
 
@@ -87,6 +87,7 @@ pub async fn register_task(
             &body.description,
             body.status.into(),
             created_at,
+            body.deadline,
             &user,
         )
         .await?;
@@ -120,8 +121,39 @@ pub async fn update_task(
             &body.description,
             body.status.into(),
             updated_at,
+            body.deadline,
             &user,
         )
         .await?;
     Ok(())
+}
+
+pub async fn get_all_task_filter_by_status(
+    State(state): State<AppState>,
+    user: UserEntity,
+    Path(task_status): Path<TaskStatusModel>,
+) -> Result<Json<Vec<TaskResponseModel>>, AppError> {
+    let tasks: Vec<TaskResponseModel> = state
+        .task_repo
+        .fetch_all_filter_by_status(&user, task_status.into())
+        .await?
+        .into_iter()
+        .map(|t| t.into())
+        .collect();
+    Ok(Json(tasks))
+}
+
+pub async fn get_overdue_task(
+    State(state): State<AppState>,
+    user: UserEntity,
+) -> Result<Json<Vec<TaskResponseModel>>, AppError> {
+    let now = Utc::now().naive_utc();
+    let tasks: Vec<TaskResponseModel> = state
+        .task_repo
+        .fetch_all_overdue_task(&user, now)
+        .await?
+        .into_iter()
+        .map(|t| t.into())
+        .collect();
+    Ok(Json(tasks))
 }

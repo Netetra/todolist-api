@@ -59,6 +59,7 @@ pub struct TaskEntity {
     pub status: TaskStatus,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
+    pub deadline: Option<NaiveDateTime>,
     #[allow(dead_code)]
     pub user_id: i32,
 }
